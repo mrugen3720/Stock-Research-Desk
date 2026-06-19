@@ -1,0 +1,24 @@
+# Python virtual environment
+venv/
+.venv/
+
+# Secrets
+.env
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+logs/
+
+# OS / editor cruft
+.DS_Store
+.idea/
+.vscode/
+
+# Data artifacts (keep the folder, ignore contents)
+data/*
+!data/.gitkeep

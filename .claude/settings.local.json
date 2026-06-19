@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git --version)",
+      "Bash(mkdir -p src/workers src/agents src/graph data scripts logs)",
+      "Bash(git init *)"
+    ]
+  }
+}
