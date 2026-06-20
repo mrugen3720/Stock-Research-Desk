@@ -16,3 +16,13 @@ def get_daily_candles(ticker: str, period: str = "1y"):
             "(NSE tickers end in .NS)."
         )
     return candles
+
+
+def get_info(ticker: str) -> dict:
+    """yfinance .info snapshot (valuation, margins, balance-sheet ratios)."""
+    return yf.Ticker(ticker).info or {}
+
+
+def get_financials(ticker: str):
+    """Annual income statement (yfinance .financials). May be empty."""
+    return yf.Ticker(ticker).financials

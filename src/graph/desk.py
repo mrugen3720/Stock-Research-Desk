@@ -21,12 +21,14 @@ from typing import Annotated, TypedDict
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
-from ..workers import technicals
+from ..workers import fundamentals, news, technicals
 
 # Registry of available workers: name -> callable(ticker) -> WorkerReport.
-# Phase 5 adds "fundamentals" and "news" here.
+# Every name here is dispatched in parallel by the supervisor.
 WORKER_REGISTRY = {
     "technicals": technicals.analyze,
+    "fundamentals": fundamentals.analyze,
+    "news": news.analyze,
 }
 
 
