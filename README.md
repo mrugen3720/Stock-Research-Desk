@@ -85,6 +85,29 @@ Then message the bot "tata steel", "cdsl", "BEL", etc. The resolve+desk logic
 lives in `src/bot/core.py` (channel-agnostic), so a Discord/WhatsApp adapter can
 reuse it.
 
+## Inbound Discord bot (works in India today)
+
+Telegram is banned in India as of mid-2026; Discord is not, and (like Telegram
+polling) needs no public URL. Same desk, different channel.
+
+Setup:
+1. Create an app + bot at https://discord.com/developers/applications, copy the
+   **bot token** into `.env` as `DISCORD_BOT_TOKEN`.
+2. Invite the bot to your server (OAuth2 URL with the `bot` and
+   `applications.commands` scopes).
+3. (Optional) set `DISCORD_GUILD_ID` to your server id so `/stock` appears
+   instantly.
+4. Run it:
+
+```bash
+source venv/bin/activate
+python -m src.bot.discord_bot
+```
+
+Then type `/stock query: tata steel` in your server. To accept plain-text
+messages too (e.g. just typing "cdsl"), enable the **Message Content Intent** in
+the Developer Portal and set `DISCORD_MESSAGE_CONTENT=true`.
+
 ## Scheduled runs (cron)
 
 `scripts/run_desk_cron.sh` activates the venv, runs the tickers in its `TICKERS`

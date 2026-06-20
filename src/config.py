@@ -15,6 +15,15 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 NVIDIA_NIM_API_KEY = os.getenv("NVIDIA_NIM_API_KEY", "").strip()
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN", "").strip()
+# Optional: a server (guild) id makes slash commands sync instantly for testing.
+DISCORD_GUILD_ID = os.getenv("DISCORD_GUILD_ID", "").strip()
+# Plain-text messages (vs only the /stock slash command) need Discord's
+# privileged "Message Content Intent" enabled in the Developer Portal. Opt in
+# here only after enabling it there, or the bot login will fail.
+DISCORD_MESSAGE_CONTENT = os.getenv("DISCORD_MESSAGE_CONTENT", "").strip().lower() in (
+    "1", "true", "yes", "on",
+)
 
 # --- Email fallback (SMTP; defaults suit Gmail with an app password) ---
 EMAIL_SMTP_HOST = os.getenv("EMAIL_SMTP_HOST", "smtp.gmail.com").strip()
