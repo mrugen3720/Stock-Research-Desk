@@ -10,13 +10,16 @@ from langchain_openai import ChatOpenAI
 from . import config
 
 
-def _provider_llm(provider: str):
-    """Build a ChatOpenAI for one provider, or None if its key is missing."""
+def _provider_llm(provider: str, model: str | None = None):
+    """Build a ChatOpenAI for one provider, or None if its key is missing.
+
+    `model` overrides the provider's default model when given.
+    """
     if provider == "groq":
         if not config.GROQ_API_KEY:
             return None
         return ChatOpenAI(
-            model=config.GROQ_MODEL,
+            model=model or config.GROQ_MODEL,
             api_key=config.GROQ_API_KEY,
             base_url=config.GROQ_BASE_URL,
             temperature=0,
@@ -27,7 +30,7 @@ def _provider_llm(provider: str):
         if not config.NVIDIA_NIM_API_KEY:
             return None
         return ChatOpenAI(
-            model=config.NVIDIA_NIM_MODEL,
+            model=model or config.NVIDIA_NIM_MODEL,
             api_key=config.NVIDIA_NIM_API_KEY,
             base_url=config.NVIDIA_NIM_BASE_URL,
             temperature=0,
@@ -37,15 +40,15 @@ def _provider_llm(provider: str):
     raise ValueError(f"unknown provider {provider!r}")
 
 
-def build_structured_llm(schema):
+def build_structured_llm(schema, model: str | None = None, fallback_model: str | None = None):
     """Return a runnable that outputs validated `schema` objects, with fallback.
 
-    Groq is tried first; NVIDIA NIM backs it up. Each provider is wrapped in
-    `with_structured_output` so both return the strict shape.
+    Groq (model `model` or default) is tried first; NVIDIA NIM backs it up. Each
+    provider is wrapped in `with_structured_output` so both return the strict shape.
     """
     structured = []
-    for provider in ("groq", "nim"):
-        llm = _provider_llm(provider)
+    for provider, m in (("groq", model), ("nim", fallback_model)):
+        llm = _provider_llm(provider, m)
         if llm is not None:
             structured.append(llm.with_structured_output(schema))
 
@@ -59,14 +62,14 @@ def build_structured_llm(schema):
     return primary.with_fallbacks(backups) if backups else primary
 
 
-def build_chat_llm():
+def build_chat_llm(model: str | None = None, fallback_model: str | None = None):
     """Return a plain chat runnable (free-text output), Groq + NIM fallback.
 
     Used by the Bull/Bear debaters, who argue in prose rather than strict JSON.
     """
     llms = []
-    for provider in ("groq", "nim"):
-        llm = _provider_llm(provider)
+    for provider, m in (("groq", model), ("nim", fallback_model)):
+        llm = _provider_llm(provider, m)
         if llm is not None:
             llms.append(llm)
 

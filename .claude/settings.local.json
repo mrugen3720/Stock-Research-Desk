@@ -10,7 +10,12 @@
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Resolve free-text stock names to NSE tickers + interactive run mode *)",
       "WebSearch",
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Add inbound Telegram bot \\(channel-agnostic core\\) *)",
-      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Add inbound Discord bot \\(reuses channel-agnostic core\\) *)"
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Add inbound Discord bot \\(reuses channel-agnostic core\\) *)",
+      "Bash(rm -f /tmp/discord_bot_test.log /tmp/discord_bot.pid)",
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Harden Discord guild-id parsing \\(ignore blanks/placeholders\\) *)",
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Add Dalal Street nickname aliases \\(tisco, telco, tata comm\\) *)",
+      "Bash(rm -f /tmp/dbot.log; echo \"cleaned up\")",
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Make LLM model configurable per agent \\(workers, debaters, judge\\) *)"
     ]
   }
 }

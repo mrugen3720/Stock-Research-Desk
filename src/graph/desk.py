@@ -22,7 +22,7 @@ from typing import Annotated, TypedDict
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
-from .. import data
+from .. import config, data
 from ..agents import debaters, judge as judge_agent
 from ..workers import fundamentals, news, technicals
 
@@ -60,6 +60,9 @@ def supervisor(state: DeskState) -> DeskState:
     """Decide which workers to dispatch. No analysis happens here."""
     plan = list(WORKER_REGISTRY.keys())
     print(f"[supervisor] ticker={state['ticker']} -> dispatching {plan}")
+    models = {role: config.model_for(role)
+              for role in (*plan, "bull", "bear", "judge")}
+    print(f"[supervisor] models: {models}")
     return {"plan": plan}
 
 
@@ -75,7 +78,8 @@ def run_worker(state: DeskState) -> DeskState:
     """Run a single worker (named in the Send payload) and record its report."""
     name = state["worker"]
     report = WORKER_REGISTRY[name](state["ticker"])
-    print(f"[{name}] stance={report.stance} confidence={report.confidence}")
+    print(f"[{name}] ({config.model_for(name)}) "
+          f"stance={report.stance} confidence={report.confidence}")
     return {"reports": {name: report.model_dump()}}
 
 
@@ -120,7 +124,7 @@ def route_debate(state: DeskState) -> str:
 def judge(state: DeskState) -> DeskState:
     """Read dossier + debate and issue the verdict."""
     verdict = judge_agent.judge(state["dossier"], state["transcript"])
-    print(f"[judge] direction={verdict.direction} "
+    print(f"[judge] ({config.model_for('judge')}) direction={verdict.direction} "
           f"conviction={verdict.conviction} dead_price={verdict.dead_price}")
     return {"verdict": verdict.model_dump()}
 

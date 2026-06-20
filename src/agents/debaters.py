@@ -7,6 +7,7 @@ claim and attack it directly, then reinforce its own thesis.
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from .. import config
 from ..llm import build_chat_llm
 from . import render
 
@@ -48,7 +49,7 @@ def argue(side: str, dossier: dict, transcript: list[dict], rnd: int) -> str:
         f"DOSSIER:\n{render.dossier_to_text(dossier)}\n\n"
         f"YOUR TASK:\n{task}"
     )
-    llm = build_chat_llm()
+    llm = build_chat_llm(model=config.model_for(side))
     resp = llm.invoke([SystemMessage(content=system), HumanMessage(content=human)])
     return resp.content.strip()
 

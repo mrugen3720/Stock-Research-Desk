@@ -12,7 +12,7 @@ import sys
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from .. import data, indicators
+from .. import config, data, indicators
 from ..llm import build_structured_llm
 from ..schema import WorkerReport
 
@@ -45,7 +45,7 @@ def analyze(ticker: str) -> WorkerReport:
     ind = indicators.compute(candles)
     block = indicators.to_prompt_block(ind)
 
-    llm = build_structured_llm(WorkerReport)
+    llm = build_structured_llm(WorkerReport, model=config.model_for(WORKER_NAME))
     report = llm.invoke(
         [
             SystemMessage(content=SYSTEM_PROMPT),

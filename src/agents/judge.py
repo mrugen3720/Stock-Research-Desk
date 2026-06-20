@@ -7,6 +7,7 @@ placed — this is a recommendation for a human.
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from .. import config
 from ..llm import build_structured_llm
 from ..schema import Verdict
 from . import render
@@ -37,7 +38,7 @@ def judge(dossier: dict, transcript: list[dict]) -> Verdict:
         f"DEBATE:\n{render.transcript_to_text(transcript)}\n\n"
         "Now issue your verdict."
     )
-    llm = build_structured_llm(Verdict)
+    llm = build_structured_llm(Verdict, model=config.model_for("judge"))
     return llm.invoke(
         [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=human)]
     )

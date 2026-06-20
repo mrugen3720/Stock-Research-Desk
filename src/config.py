@@ -41,3 +41,26 @@ NVIDIA_NIM_BASE_URL = os.getenv(
 # --- Models. Groq is primary, NVIDIA NIM is the fallback. ---
 GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 NVIDIA_NIM_MODEL = os.getenv("NVIDIA_NIM_MODEL", "meta/llama-3.3-70b-instruct")
+
+# --- Per-agent model overrides ---
+# Each agent (the three workers, the two debaters, the judge) can run on its own
+# Groq model. Leave an override blank in .env to use GROQ_MODEL. The NVIDIA NIM
+# fallback model stays shared (NVIDIA_NIM_MODEL) for every agent.
+_AGENT_MODEL_ENV = {
+    "technicals": "MODEL_TECHNICALS",
+    "fundamentals": "MODEL_FUNDAMENTALS",
+    "news": "MODEL_NEWS",
+    "bull": "MODEL_BULL",
+    "bear": "MODEL_BEAR",
+    "judge": "MODEL_JUDGE",
+}
+
+
+def model_for(role: str) -> str:
+    """Groq model id for an agent role; falls back to GROQ_MODEL when unset."""
+    env_var = _AGENT_MODEL_ENV.get(role)
+    if env_var:
+        override = os.getenv(env_var, "").strip()
+        if override:
+            return override
+    return GROQ_MODEL

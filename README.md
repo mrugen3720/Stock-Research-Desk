@@ -23,6 +23,24 @@ learn **LangGraph's supervisor pattern**. The subject is the Indian stock market
 Workers and debaters run on **Groq** (free, OpenAI-compatible). **NVIDIA NIM** is kept
 configured as a fallback. All keys live in `.env` (never hardcoded).
 
+### Per-agent models
+
+Each agent (the three workers, the two debaters, the Judge) can run on its own
+Groq model. Set any of these in `.env` (blank = use `GROQ_MODEL`):
+
+```
+MODEL_TECHNICALS=
+MODEL_FUNDAMENTALS=
+MODEL_NEWS=
+MODEL_BULL=
+MODEL_BEAR=
+MODEL_JUDGE=openai/gpt-oss-120b
+```
+
+The NVIDIA NIM fallback model is shared across all agents. Each desk run prints
+the resolved model map, e.g. `[supervisor] models: {... 'judge': 'openai/gpt-oss-120b'}`.
+List your account's models: `GET https://api.groq.com/openai/v1/models`.
+
 ## Build order
 
 - [x] Phase 0 — project skeleton + git
