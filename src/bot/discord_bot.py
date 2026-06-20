@@ -76,35 +76,53 @@ def build_embed(result: dict) -> discord.Embed:
 
 # --- Interactive model picker -------------------------------------------------
 
-# (label, model id). "__default__" means "use the .env config for that role".
+# (label, model id, hint). "__default__" means "use the .env config for that role".
 MODEL_CHOICES = [
-    ("Default (.env)", "__default__"),
-    ("llama-3.3-70b-versatile", "llama-3.3-70b-versatile"),
-    ("llama-3.1-8b-instant (fast)", "llama-3.1-8b-instant"),
-    ("gpt-oss-120b (big reasoning)", "openai/gpt-oss-120b"),
-    ("gpt-oss-20b", "openai/gpt-oss-20b"),
-    ("qwen3-32b", "qwen/qwen3-32b"),
-    ("llama-4-scout-17b", "meta-llama/llama-4-scout-17b-16e-instruct"),
+    ("Default (.env)", "__default__", "Use whatever your .env is set to"),
+    ("llama-3.3-70b-versatile", "llama-3.3-70b-versatile", "⚖️ Balanced all-rounder (the default)"),
+    ("llama-3.1-8b-instant", "llama-3.1-8b-instant", "⚡ Fastest & lightest — quick, simpler takes"),
+    ("gpt-oss-120b", "openai/gpt-oss-120b", "🧠 Deepest reasoning — slower; great for the Judge"),
+    ("gpt-oss-20b", "openai/gpt-oss-20b", "🧠 Solid reasoning, mid-size"),
+    ("qwen3-32b", "qwen/qwen3-32b", "🧠 Strong reasoning, different style"),
+    ("llama-4-scout-17b", "meta-llama/llama-4-scout-17b-16e-instruct", "🆕 Newer Llama 4, fast"),
 ]
 
-# Which agent roles each dropdown controls.
+# Which agent roles each dropdown controls, with the placeholder shown for it.
 _GROUP_ROLES = {
     "workers": ["technicals", "fundamentals", "news"],
     "debaters": ["bull", "bear"],
     "judge": ["judge"],
 }
+_GROUP_PLACEHOLDER = {
+    "workers": "1️⃣ Research model — technicals, fundamentals & news",
+    "debaters": "2️⃣ Debate model — Bull vs Bear",
+    "judge": "3️⃣ Judge model — the final verdict",
+}
+
+
+def _picker_intro(query: str) -> str:
+    return (
+        f"⚙️ **{query}** — choose a model for each step, then hit ▶️ **Run**.\n"
+        "Leave any on **Default** (or just hit Run) to use your `.env` setting.\n"
+        "1️⃣ **Research** (3 workers) · 2️⃣ **Debate** (Bull vs Bear) · "
+        "3️⃣ **Judge** (final verdict)"
+    )
 
 
 class _ModelSelect(discord.ui.Select):
-    """One dropdown that sets the model for a group of agents."""
+    """One dropdown that sets the model for a group of agents.
 
-    def __init__(self, group: str, placeholder: str, row: int):
+    No option is pre-selected, so the placeholder (which names the step) stays
+    visible until the user picks — that's how they tell the dropdowns apart.
+    """
+
+    def __init__(self, group: str, row: int):
         self.group = group
         options = [
-            discord.SelectOption(label=label, value=value, default=(i == 0))
-            for i, (label, value) in enumerate(MODEL_CHOICES)
+            discord.SelectOption(label=label, value=value, description=hint)
+            for label, value, hint in MODEL_CHOICES
         ]
-        super().__init__(placeholder=placeholder, options=options,
+        super().__init__(placeholder=_GROUP_PLACEHOLDER[group], options=options,
                          min_values=1, max_values=1, row=row)
 
     async def callback(self, interaction: discord.Interaction):
@@ -115,16 +133,16 @@ class _ModelSelect(discord.ui.Select):
 
 
 class ModelPicker(discord.ui.View):
-    """Dropdowns for workers / debaters / judge, plus a Run button."""
+    """Dropdowns for research / debate / judge, plus a Run button."""
 
     def __init__(self, query: str, user_id: int):
         super().__init__(timeout=180)
         self.query = query
         self.user_id = user_id
         self.selections = {g: "__default__" for g in _GROUP_ROLES}
-        self.add_item(_ModelSelect("workers", "Workers (technicals, fundamentals, news)", 0))
-        self.add_item(_ModelSelect("debaters", "Debaters (bull & bear)", 1))
-        self.add_item(_ModelSelect("judge", "Judge", 2))
+        self.add_item(_ModelSelect("workers", 0))
+        self.add_item(_ModelSelect("debaters", 1))
+        self.add_item(_ModelSelect("judge", 2))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.user_id:
@@ -195,10 +213,7 @@ def build_client() -> discord.Client:
     @app_commands.describe(query="e.g. tata steel, reliance, cdsl, BEL")
     async def stock(interaction: discord.Interaction, query: str):
         view = ModelPicker(query, interaction.user.id)
-        await interaction.response.send_message(
-            content=f"⚙️ **{query}** — pick models (or just hit Run for defaults):",
-            view=view,
-        )
+        await interaction.response.send_message(content=_picker_intro(query), view=view)
 
     @client.event
     async def on_message(message: discord.Message):
@@ -208,10 +223,7 @@ def build_client() -> discord.Client:
         if not content or content.startswith("/"):
             return
         view = ModelPicker(content, message.author.id)
-        await message.reply(
-            content=f"⚙️ **{content}** — pick models (or just hit Run for defaults):",
-            view=view,
-        )
+        await message.reply(content=_picker_intro(content), view=view)
 
     return client
 
