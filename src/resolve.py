@@ -27,8 +27,12 @@ ALIASES = {
     "larsen": "LT.NS",
     "sbi": "SBIN.NS",
     "tata steel": "TATASTEEL.NS",
+    "tisco": "TATASTEEL.NS",          # old name: Tata Iron & Steel Co.
     "tata power": "TATAPOWER.NS",
     "tata motors": "TATAMOTORS.NS",
+    "telco": "TATAMOTORS.NS",         # old name: Tata Engineering & Locomotive Co.
+    "tata comm": "TATACOMM.NS",
+    "tata communications": "TATACOMM.NS",
     "cdsl": "CDSL.NS",
     "bel": "BEL.NS",
     "hal": "HAL.NS",
