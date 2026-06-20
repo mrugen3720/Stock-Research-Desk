@@ -20,6 +20,11 @@ _DIRECTION = {
 }
 
 
+def is_configured(chat_id: str | None = None) -> bool:
+    """True if a bot token and a chat id are both available."""
+    return bool(config.TELEGRAM_BOT_TOKEN and (chat_id or config.TELEGRAM_CHAT_ID))
+
+
 def _esc(x) -> str:
     return html.escape(str(x))
 

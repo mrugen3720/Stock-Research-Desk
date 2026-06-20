@@ -54,6 +54,23 @@ python -m src.run BEL.NS HAL.NS        # run + deliver to Telegram
 
 No order is ever placed. Every message ends with "Human approves all trades."
 
+## Email fallback
+
+If Telegram delivery fails (or is unconfigured), the desk falls back to email.
+`src.delivery.deliver_verdict` tries Telegram first, then email, and reports
+which channel succeeded.
+
+For Gmail: create an **App Password** (Google Account → Security → App passwords),
+then in `.env`:
+
+```
+EMAIL_ADDRESS=you@gmail.com
+EMAIL_APP_PASSWORD=your_16_char_app_password
+EMAIL_TO=you@gmail.com
+```
+
+Defaults are `smtp.gmail.com:587` (STARTTLS); port `465` uses implicit SSL.
+
 ## Scheduled runs (cron)
 
 `scripts/run_desk_cron.sh` activates the venv, runs the tickers in its `TICKERS`

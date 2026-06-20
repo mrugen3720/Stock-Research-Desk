@@ -13,6 +13,7 @@ import sys
 import traceback
 from datetime import datetime, timezone
 
+from . import delivery
 from .delivery import telegram
 from .graph.desk import run_desk
 
@@ -29,10 +30,10 @@ def process(ticker: str, send: bool):
     )
 
     if send:
-        telegram.deliver_verdict(dossier, verdict)
-        print(f"-> delivered to Telegram")
+        channel = delivery.deliver_verdict(dossier, verdict)
+        print(f"-> delivered via {channel}")
     else:
-        print("-> --no-send: skipped Telegram. Message preview:\n")
+        print("-> --no-send: skipped delivery. Telegram message preview:\n")
         print(telegram.format_verdict(dossier, verdict))
 
 

@@ -16,6 +16,13 @@ NVIDIA_NIM_API_KEY = os.getenv("NVIDIA_NIM_API_KEY", "").strip()
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 
+# --- Email fallback (SMTP; defaults suit Gmail with an app password) ---
+EMAIL_SMTP_HOST = os.getenv("EMAIL_SMTP_HOST", "smtp.gmail.com").strip()
+EMAIL_SMTP_PORT = int(os.getenv("EMAIL_SMTP_PORT", "587"))
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS", "").strip()        # sender / SMTP login
+EMAIL_APP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD", "").strip()
+EMAIL_TO = os.getenv("EMAIL_TO", "").strip() or EMAIL_ADDRESS  # recipient
+
 # --- OpenAI-compatible endpoints ---
 GROQ_BASE_URL = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
 NVIDIA_NIM_BASE_URL = os.getenv(

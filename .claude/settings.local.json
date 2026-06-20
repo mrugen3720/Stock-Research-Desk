@@ -3,7 +3,9 @@
     "allow": [
       "Bash(git --version)",
       "Bash(mkdir -p src/workers src/agents src/graph data scripts logs)",
-      "Bash(git init *)"
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Add email fallback for verdict delivery *)"
     ]
   }
 }
