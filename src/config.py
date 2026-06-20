@@ -39,7 +39,7 @@ NVIDIA_NIM_BASE_URL = os.getenv(
 )
 
 # --- Models. Groq is primary, NVIDIA NIM is the fallback. ---
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 NVIDIA_NIM_MODEL = os.getenv("NVIDIA_NIM_MODEL", "meta/llama-3.3-70b-instruct")
 
 # --- Per-agent model overrides ---

@@ -16,7 +16,9 @@
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Add Dalal Street nickname aliases \\(tisco, telco, tata comm\\) *)",
       "Bash(rm -f /tmp/dbot.log; echo \"cleaned up\")",
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Make LLM model configurable per agent \\(workers, debaters, judge\\) *)",
-      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Discord: pick models per request via dropdowns before running *)"
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Discord: pick models per request via dropdowns before running *)",
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Discord picker: label each dropdown by purpose + add model hints *)",
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Default all agents to openai/gpt-oss-120b *)"
     ]
   }
 }

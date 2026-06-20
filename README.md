@@ -25,16 +25,18 @@ configured as a fallback. All keys live in `.env` (never hardcoded).
 
 ### Per-agent models
 
-Each agent (the three workers, the two debaters, the Judge) can run on its own
-Groq model. Set any of these in `.env` (blank = use `GROQ_MODEL`):
+Every agent defaults to `GROQ_MODEL` (currently `openai/gpt-oss-120b`). Each
+agent (the three workers, the two debaters, the Judge) can override it with its
+own Groq model — set any of these in `.env` (blank = use `GROQ_MODEL`):
 
 ```
-MODEL_TECHNICALS=
+GROQ_MODEL=openai/gpt-oss-120b   # default for all agents
+MODEL_TECHNICALS=                # e.g. llama-3.1-8b-instant to speed up workers
 MODEL_FUNDAMENTALS=
 MODEL_NEWS=
 MODEL_BULL=
 MODEL_BEAR=
-MODEL_JUDGE=openai/gpt-oss-120b
+MODEL_JUDGE=
 ```
 
 The NVIDIA NIM fallback model is shared across all agents. Each desk run prints

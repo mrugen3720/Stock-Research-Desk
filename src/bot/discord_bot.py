@@ -78,10 +78,10 @@ def build_embed(result: dict) -> discord.Embed:
 
 # (label, model id, hint). "__default__" means "use the .env config for that role".
 MODEL_CHOICES = [
-    ("Default (.env)", "__default__", "Use whatever your .env is set to"),
-    ("llama-3.3-70b-versatile", "llama-3.3-70b-versatile", "⚖️ Balanced all-rounder (the default)"),
+    ("Default (.env)", "__default__", "Use whatever your .env is set to (gpt-oss-120b)"),
+    ("llama-3.3-70b-versatile", "llama-3.3-70b-versatile", "⚖️ Balanced all-rounder, faster"),
     ("llama-3.1-8b-instant", "llama-3.1-8b-instant", "⚡ Fastest & lightest — quick, simpler takes"),
-    ("gpt-oss-120b", "openai/gpt-oss-120b", "🧠 Deepest reasoning — slower; great for the Judge"),
+    ("gpt-oss-120b", "openai/gpt-oss-120b", "🧠 Deepest reasoning (the default); slower"),
     ("gpt-oss-20b", "openai/gpt-oss-20b", "🧠 Solid reasoning, mid-size"),
     ("qwen3-32b", "qwen/qwen3-32b", "🧠 Strong reasoning, different style"),
     ("llama-4-scout-17b", "meta-llama/llama-4-scout-17b-16e-instruct", "🆕 Newer Llama 4, fast"),
