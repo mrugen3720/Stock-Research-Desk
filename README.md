@@ -71,6 +71,20 @@ EMAIL_TO=you@gmail.com
 
 Defaults are `smtp.gmail.com:587` (STARTTLS); port `465` uses implicit SSL.
 
+## Inbound Telegram bot
+
+Chat the bot a stock name and it replies with a verdict (long polling — no public
+URL needed, but Telegram must be reachable on your network):
+
+```bash
+source venv/bin/activate
+python -m src.bot.telegram_bot
+```
+
+Then message the bot "tata steel", "cdsl", "BEL", etc. The resolve+desk logic
+lives in `src/bot/core.py` (channel-agnostic), so a Discord/WhatsApp adapter can
+reuse it.
+
 ## Scheduled runs (cron)
 
 `scripts/run_desk_cron.sh` activates the venv, runs the tickers in its `TICKERS`

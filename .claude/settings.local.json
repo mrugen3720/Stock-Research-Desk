@@ -7,7 +7,9 @@
       "Bash(git add *)",
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Add email fallback for verdict delivery *)",
       "Bash(git check-ignore *)",
-      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Resolve free-text stock names to NSE tickers + interactive run mode *)"
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Resolve free-text stock names to NSE tickers + interactive run mode *)",
+      "WebSearch",
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Add inbound Telegram bot \\(channel-agnostic core\\) *)"
     ]
   }
 }
