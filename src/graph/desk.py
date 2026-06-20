@@ -14,6 +14,7 @@ Run it directly:
 """
 
 import json
+import operator
 import sys
 from datetime import datetime, timezone
 from typing import Annotated, TypedDict
@@ -21,6 +22,8 @@ from typing import Annotated, TypedDict
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Send
 
+from .. import data
+from ..agents import debaters, judge as judge_agent
 from ..workers import fundamentals, news, technicals
 
 # Registry of available workers: name -> callable(ticker) -> WorkerReport.
@@ -30,6 +33,9 @@ WORKER_REGISTRY = {
     "fundamentals": fundamentals.analyze,
     "news": news.analyze,
 }
+
+# Number of Bull/Bear debate rounds before the Judge rules.
+ROUNDS = 2
 
 
 def merge_reports(left: dict | None, right: dict | None) -> dict:
@@ -44,7 +50,10 @@ class DeskState(TypedDict, total=False):
     plan: list[str]                      # supervisor's chosen workers
     worker: str                          # per-branch: which worker this Send runs
     reports: Annotated[dict, merge_reports]  # name -> report dict (reduced)
-    dossier: dict                        # final bundle handed downstream
+    dossier: dict                        # bundled worker reports + price
+    transcript: Annotated[list, operator.add]  # debate, appended each turn
+    rounds_done: int                     # completed Bull+Bear rounds
+    verdict: dict                        # the Judge's final call
 
 
 def supervisor(state: DeskState) -> DeskState:
@@ -71,43 +80,92 @@ def run_worker(state: DeskState) -> DeskState:
 
 
 def bundle(state: DeskState) -> DeskState:
-    """Collect every worker report into one dossier."""
+    """Collect every worker report into one dossier (with current price)."""
     dossier = {
         "ticker": state["ticker"],
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "workers": sorted(state["reports"].keys()),
+        "last_price": data.get_last_price(state["ticker"]),
         "reports": state["reports"],
     }
-    print(f"[supervisor] bundled dossier from {dossier['workers']}")
+    print(f"[supervisor] bundled dossier from {dossier['workers']} "
+          f"(price={dossier['last_price']})")
     return {"dossier": dossier}
 
 
+def bull(state: DeskState) -> DeskState:
+    """Bull debater for the current round."""
+    rnd = state.get("rounds_done", 0) + 1
+    arg = debaters.bull(state["dossier"], state.get("transcript", []), rnd)
+    print(f"[bull r{rnd}] {arg.splitlines()[0][:90]}...")
+    return {"transcript": [{"round": rnd, "side": "bull", "text": arg}]}
+
+
+def bear(state: DeskState) -> DeskState:
+    """Bear debater for the current round; closes out the round counter."""
+    rnd = state.get("rounds_done", 0) + 1
+    arg = debaters.bear(state["dossier"], state.get("transcript", []), rnd)
+    print(f"[bear r{rnd}] {arg.splitlines()[0][:90]}...")
+    return {
+        "transcript": [{"round": rnd, "side": "bear", "text": arg}],
+        "rounds_done": rnd,
+    }
+
+
+def route_debate(state: DeskState) -> str:
+    """After each round: another round, or hand off to the Judge."""
+    return "bull" if state["rounds_done"] < ROUNDS else "judge"
+
+
+def judge(state: DeskState) -> DeskState:
+    """Read dossier + debate and issue the verdict."""
+    verdict = judge_agent.judge(state["dossier"], state["transcript"])
+    print(f"[judge] direction={verdict.direction} "
+          f"conviction={verdict.conviction} dead_price={verdict.dead_price}")
+    return {"verdict": verdict.model_dump()}
+
+
 def build_graph():
-    """Compile the supervisor graph."""
+    """Compile the full desk graph: workers -> debate loop -> judge."""
     g = StateGraph(DeskState)
     g.add_node("supervisor", supervisor)
     g.add_node("run_worker", run_worker)
     g.add_node("bundle", bundle)
+    g.add_node("bull", bull)
+    g.add_node("bear", bear)
+    g.add_node("judge", judge)
 
     g.add_edge(START, "supervisor")
     g.add_conditional_edges("supervisor", dispatch, ["run_worker"])
     g.add_edge("run_worker", "bundle")
-    g.add_edge("bundle", END)
+    # Debate: bundle -> bull -> bear -> (loop to bull | judge) -> END.
+    g.add_edge("bundle", "bull")
+    g.add_edge("bull", "bear")
+    g.add_conditional_edges("bear", route_debate, ["bull", "judge"])
+    g.add_edge("judge", END)
     return g.compile()
 
 
 def run_desk(ticker: str) -> dict:
-    """Run the desk end to end and return the dossier."""
-    final = build_graph().invoke({"ticker": ticker})
-    return final["dossier"]
+    """Run the desk end to end and return the final state."""
+    return build_graph().invoke({"ticker": ticker})
 
 
 def main():
     ticker = sys.argv[1] if len(sys.argv) > 1 else "BEL.NS"
-    print(f"=== research desk (supervisor + workers) on {ticker} ===\n")
-    dossier = run_desk(ticker)
+    print(f"=== research desk: workers -> debate -> judge on {ticker} ===\n")
+    final = run_desk(ticker)
+
+    print("\n--- DEBATE TRANSCRIPT ---")
+    for turn in final["transcript"]:
+        print(f"\n[Round {turn['round']} | {turn['side'].upper()}]")
+        print(turn["text"])
+
     print("\n--- DOSSIER ---")
-    print(json.dumps(dossier, indent=2))
+    print(json.dumps(final["dossier"], indent=2))
+
+    print("\n--- VERDICT ---")
+    print(json.dumps(final["verdict"], indent=2))
 
 
 if __name__ == "__main__":

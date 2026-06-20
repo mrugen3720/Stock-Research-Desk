@@ -36,3 +36,38 @@ class WorkerReport(BaseModel):
         ...,
         description="What the findings are based on (data feeds, windows, indicators).",
     )
+
+
+class Verdict(BaseModel):
+    """The Judge's final call after reading the Bull/Bear debate.
+
+    No order is ever placed from this — it is a recommendation for a human.
+    """
+
+    direction: Literal["long", "short", "avoid"] = Field(
+        ...,
+        description=(
+            "long = bullish idea worth a position, short = bearish idea, "
+            "avoid = no edge / stay out."
+        ),
+    )
+    conviction: float = Field(
+        ..., ge=0.0, le=1.0, description="How strong the call is, 0-1."
+    )
+    thesis: str = Field(
+        ..., description="One sentence stating the call and its core reason."
+    )
+    invalidator: str = Field(
+        ...,
+        description="The single most important thing that would prove the thesis wrong.",
+    )
+    dead_price: float = Field(
+        ...,
+        description=(
+            "The price level (in INR) at which the idea is dead and the position "
+            "should be abandoned."
+        ),
+    )
+    dead_price_rationale: str = Field(
+        ..., description="Why that specific level kills the thesis."
+    )

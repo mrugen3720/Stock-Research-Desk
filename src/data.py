@@ -26,3 +26,14 @@ def get_info(ticker: str) -> dict:
 def get_financials(ticker: str):
     """Annual income statement (yfinance .financials). May be empty."""
     return yf.Ticker(ticker).financials
+
+
+def get_last_price(ticker: str):
+    """Latest close. Anchors the Judge's 'dead price' level. None on failure."""
+    try:
+        candles = yf.Ticker(ticker).history(period="5d", interval="1d")
+        if candles.empty:
+            return None
+        return round(float(candles["Close"].iloc[-1]), 2)
+    except Exception:
+        return None

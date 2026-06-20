@@ -57,3 +57,24 @@ def build_structured_llm(schema):
 
     primary, *backups = structured
     return primary.with_fallbacks(backups) if backups else primary
+
+
+def build_chat_llm():
+    """Return a plain chat runnable (free-text output), Groq + NIM fallback.
+
+    Used by the Bull/Bear debaters, who argue in prose rather than strict JSON.
+    """
+    llms = []
+    for provider in ("groq", "nim"):
+        llm = _provider_llm(provider)
+        if llm is not None:
+            llms.append(llm)
+
+    if not llms:
+        raise RuntimeError(
+            "No LLM provider configured. Set GROQ_API_KEY (and optionally "
+            "NVIDIA_NIM_API_KEY) in your .env."
+        )
+
+    primary, *backups = llms
+    return primary.with_fallbacks(backups) if backups else primary
