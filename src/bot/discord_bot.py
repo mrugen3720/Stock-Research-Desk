@@ -31,6 +31,21 @@ def _clip(text: str, limit: int = 1024) -> str:
     return text if len(text) <= limit else text[: limit - 1] + "…"
 
 
+def _guild_id():
+    """Parse DISCORD_GUILD_ID to an int, or None (e.g. blank or a placeholder)."""
+    raw = config.DISCORD_GUILD_ID
+    if not raw:
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        print(
+            f"[discord] DISCORD_GUILD_ID={raw!r} is not a numeric id; "
+            "falling back to global command sync."
+        )
+        return None
+
+
 def build_embed(result: dict) -> discord.Embed:
     """Render a successful verdict result as a Discord embed."""
     v, d = result["verdict"], result["dossier"]
@@ -70,13 +85,18 @@ def build_client() -> discord.Client:
     @client.event
     async def on_ready():
         # Sync slash commands: instantly to a guild if given, else globally.
-        if config.DISCORD_GUILD_ID:
-            guild = discord.Object(id=int(config.DISCORD_GUILD_ID))
+        gid = _guild_id()
+        if gid is not None:
+            guild = discord.Object(id=gid)
             tree.copy_global_to(guild=guild)
             await tree.sync(guild=guild)
+            print(f"Discord bot ready as {client.user}. /stock synced to guild {gid}.")
         else:
             await tree.sync()
-        print(f"Discord bot ready as {client.user}. Use /stock <name>.")
+            print(
+                f"Discord bot ready as {client.user}. /stock synced globally "
+                "(can take up to ~1 hour to appear)."
+            )
 
     @tree.command(name="stock", description="Research an NSE stock (name or ticker).")
     @app_commands.describe(query="e.g. tata steel, reliance, cdsl, BEL")
