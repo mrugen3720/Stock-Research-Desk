@@ -47,6 +47,7 @@ def merge_reports(left: dict | None, right: dict | None) -> dict:
 
 class DeskState(TypedDict, total=False):
     ticker: str                          # set once at entry
+    models: dict                         # per-role model overrides (role -> model id)
     plan: list[str]                      # supervisor's chosen workers
     worker: str                          # per-branch: which worker this Send runs
     reports: Annotated[dict, merge_reports]  # name -> report dict (reduced)
@@ -56,20 +57,33 @@ class DeskState(TypedDict, total=False):
     verdict: dict                        # the Judge's final call
 
 
+def _model(state: DeskState, role: str) -> str:
+    """Effective model for a role: a per-run override wins, else the .env config."""
+    return (state.get("models") or {}).get(role) or config.model_for(role)
+
+
 def supervisor(state: DeskState) -> DeskState:
     """Decide which workers to dispatch. No analysis happens here."""
     plan = list(WORKER_REGISTRY.keys())
     print(f"[supervisor] ticker={state['ticker']} -> dispatching {plan}")
-    models = {role: config.model_for(role)
+    models = {role: _model(state, role)
               for role in (*plan, "bull", "bear", "judge")}
     print(f"[supervisor] models: {models}")
     return {"plan": plan}
 
 
 def dispatch(state: DeskState):
-    """Conditional edge: fan out one Send per planned worker."""
+    """Conditional edge: fan out one Send per planned worker.
+
+    The Send payload must carry `models`, since fan-out branches start from this
+    payload, not the full graph state.
+    """
     return [
-        Send("run_worker", {"ticker": state["ticker"], "worker": name})
+        Send("run_worker", {
+            "ticker": state["ticker"],
+            "worker": name,
+            "models": state.get("models", {}),
+        })
         for name in state["plan"]
     ]
 
@@ -77,8 +91,9 @@ def dispatch(state: DeskState):
 def run_worker(state: DeskState) -> DeskState:
     """Run a single worker (named in the Send payload) and record its report."""
     name = state["worker"]
-    report = WORKER_REGISTRY[name](state["ticker"])
-    print(f"[{name}] ({config.model_for(name)}) "
+    model = _model(state, name)
+    report = WORKER_REGISTRY[name](state["ticker"], model)
+    print(f"[{name}] ({model}) "
           f"stance={report.stance} confidence={report.confidence}")
     return {"reports": {name: report.model_dump()}}
 
@@ -100,7 +115,7 @@ def bundle(state: DeskState) -> DeskState:
 def bull(state: DeskState) -> DeskState:
     """Bull debater for the current round."""
     rnd = state.get("rounds_done", 0) + 1
-    arg = debaters.bull(state["dossier"], state.get("transcript", []), rnd)
+    arg = debaters.bull(state["dossier"], state.get("transcript", []), rnd, _model(state, "bull"))
     print(f"[bull r{rnd}] {arg.splitlines()[0][:90]}...")
     return {"transcript": [{"round": rnd, "side": "bull", "text": arg}]}
 
@@ -108,7 +123,7 @@ def bull(state: DeskState) -> DeskState:
 def bear(state: DeskState) -> DeskState:
     """Bear debater for the current round; closes out the round counter."""
     rnd = state.get("rounds_done", 0) + 1
-    arg = debaters.bear(state["dossier"], state.get("transcript", []), rnd)
+    arg = debaters.bear(state["dossier"], state.get("transcript", []), rnd, _model(state, "bear"))
     print(f"[bear r{rnd}] {arg.splitlines()[0][:90]}...")
     return {
         "transcript": [{"round": rnd, "side": "bear", "text": arg}],
@@ -123,8 +138,9 @@ def route_debate(state: DeskState) -> str:
 
 def judge(state: DeskState) -> DeskState:
     """Read dossier + debate and issue the verdict."""
-    verdict = judge_agent.judge(state["dossier"], state["transcript"])
-    print(f"[judge] ({config.model_for('judge')}) direction={verdict.direction} "
+    jmodel = _model(state, "judge")
+    verdict = judge_agent.judge(state["dossier"], state["transcript"], jmodel)
+    print(f"[judge] ({jmodel}) direction={verdict.direction} "
           f"conviction={verdict.conviction} dead_price={verdict.dead_price}")
     return {"verdict": verdict.model_dump()}
 
@@ -150,9 +166,13 @@ def build_graph():
     return g.compile()
 
 
-def run_desk(ticker: str) -> dict:
-    """Run the desk end to end and return the final state."""
-    return build_graph().invoke({"ticker": ticker})
+def run_desk(ticker: str, model_overrides: dict | None = None) -> dict:
+    """Run the desk end to end and return the final state.
+
+    `model_overrides` maps a role (technicals/fundamentals/news/bull/bear/judge)
+    to a Groq model id for this run only; unset roles use the .env config.
+    """
+    return build_graph().invoke({"ticker": ticker, "models": model_overrides or {}})
 
 
 def main():

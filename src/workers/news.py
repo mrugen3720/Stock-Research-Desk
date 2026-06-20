@@ -38,7 +38,7 @@ SYSTEM_PROMPT = (
 )
 
 
-def analyze(ticker: str) -> WorkerReport:
+def analyze(ticker: str, model: str | None = None) -> WorkerReport:
     info = data.get_info(ticker)
     name = info.get("longName") or info.get("shortName") or ticker
     query = news.build_query(name, ticker)
@@ -46,7 +46,7 @@ def analyze(ticker: str) -> WorkerReport:
     articles = news.fetch_recent(query, days=14)
     block = news.to_prompt_block(articles)
 
-    llm = build_structured_llm(WorkerReport, model=config.model_for(WORKER_NAME))
+    llm = build_structured_llm(WorkerReport, model=model or config.model_for(WORKER_NAME))
     return llm.invoke(
         [
             SystemMessage(content=SYSTEM_PROMPT),

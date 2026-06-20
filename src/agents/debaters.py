@@ -36,7 +36,8 @@ _ROUND2 = (
 )
 
 
-def argue(side: str, dossier: dict, transcript: list[dict], rnd: int) -> str:
+def argue(side: str, dossier: dict, transcript: list[dict], rnd: int,
+          model: str | None = None) -> str:
     label, case, opp = _SIDE[side]
     system = _SYSTEM.format(label=label, case=case)
 
@@ -49,14 +50,14 @@ def argue(side: str, dossier: dict, transcript: list[dict], rnd: int) -> str:
         f"DOSSIER:\n{render.dossier_to_text(dossier)}\n\n"
         f"YOUR TASK:\n{task}"
     )
-    llm = build_chat_llm(model=config.model_for(side))
+    llm = build_chat_llm(model=model or config.model_for(side))
     resp = llm.invoke([SystemMessage(content=system), HumanMessage(content=human)])
     return resp.content.strip()
 
 
-def bull(dossier: dict, transcript: list[dict], rnd: int) -> str:
-    return argue("bull", dossier, transcript, rnd)
+def bull(dossier: dict, transcript: list[dict], rnd: int, model: str | None = None) -> str:
+    return argue("bull", dossier, transcript, rnd, model)
 
 
-def bear(dossier: dict, transcript: list[dict], rnd: int) -> str:
-    return argue("bear", dossier, transcript, rnd)
+def bear(dossier: dict, transcript: list[dict], rnd: int, model: str | None = None) -> str:
+    return argue("bear", dossier, transcript, rnd, model)

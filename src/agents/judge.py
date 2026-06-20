@@ -32,13 +32,13 @@ SYSTEM_PROMPT = (
 )
 
 
-def judge(dossier: dict, transcript: list[dict]) -> Verdict:
+def judge(dossier: dict, transcript: list[dict], model: str | None = None) -> Verdict:
     human = (
         f"DOSSIER:\n{render.dossier_to_text(dossier)}\n\n"
         f"DEBATE:\n{render.transcript_to_text(transcript)}\n\n"
         "Now issue your verdict."
     )
-    llm = build_structured_llm(Verdict, model=config.model_for("judge"))
+    llm = build_structured_llm(Verdict, model=model or config.model_for("judge"))
     return llm.invoke(
         [SystemMessage(content=SYSTEM_PROMPT), HumanMessage(content=human)]
     )

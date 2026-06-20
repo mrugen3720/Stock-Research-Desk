@@ -39,13 +39,13 @@ SYSTEM_PROMPT = (
 )
 
 
-def analyze(ticker: str) -> WorkerReport:
+def analyze(ticker: str, model: str | None = None) -> WorkerReport:
     """Run the full technicals pipeline for one ticker."""
     candles = data.get_daily_candles(ticker, period="1y")
     ind = indicators.compute(candles)
     block = indicators.to_prompt_block(ind)
 
-    llm = build_structured_llm(WorkerReport, model=config.model_for(WORKER_NAME))
+    llm = build_structured_llm(WorkerReport, model=model or config.model_for(WORKER_NAME))
     report = llm.invoke(
         [
             SystemMessage(content=SYSTEM_PROMPT),

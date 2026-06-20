@@ -15,7 +15,8 @@
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Harden Discord guild-id parsing \\(ignore blanks/placeholders\\) *)",
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Add Dalal Street nickname aliases \\(tisco, telco, tata comm\\) *)",
       "Bash(rm -f /tmp/dbot.log; echo \"cleaned up\")",
-      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Make LLM model configurable per agent \\(workers, debaters, judge\\) *)"
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Make LLM model configurable per agent \\(workers, debaters, judge\\) *)",
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Discord: pick models per request via dropdowns before running *)"
     ]
   }
 }

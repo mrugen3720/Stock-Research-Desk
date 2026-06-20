@@ -9,8 +9,10 @@ from .. import resolve
 from ..graph.desk import run_desk
 
 
-def run_for_query(query: str) -> dict:
+def run_for_query(query: str, model_overrides: dict | None = None) -> dict:
     """Resolve a free-text query and run the desk.
+
+    `model_overrides` (optional) maps a role to a model id for this run only.
 
     Returns a dict with:
       ok=True  -> {ok, query, ticker, name, dossier, verdict}
@@ -34,7 +36,7 @@ def run_for_query(query: str) -> dict:
         }
 
     try:
-        final = run_desk(ticker)
+        final = run_desk(ticker, model_overrides=model_overrides)
     except Exception as exc:  # noqa: BLE001
         return {
             "ok": False,

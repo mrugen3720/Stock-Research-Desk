@@ -39,13 +39,13 @@ SYSTEM_PROMPT = (
 )
 
 
-def analyze(ticker: str) -> WorkerReport:
+def analyze(ticker: str, model: str | None = None) -> WorkerReport:
     info = data.get_info(ticker)
     financials = data.get_financials(ticker)
     metrics = fundamentals.compute(info, financials)
     block = fundamentals.to_prompt_block(metrics)
 
-    llm = build_structured_llm(WorkerReport, model=config.model_for(WORKER_NAME))
+    llm = build_structured_llm(WorkerReport, model=model or config.model_for(WORKER_NAME))
     return llm.invoke(
         [
             SystemMessage(content=SYSTEM_PROMPT),
