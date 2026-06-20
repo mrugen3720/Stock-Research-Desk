@@ -28,11 +28,45 @@ configured as a fallback. All keys live in `.env` (never hardcoded).
 - [x] Phase 0 — project skeleton + git
 - [x] Phase 1 — venv, dependencies, `.env` template
 - [x] Phase 2 — plain data-fetch script for ONE ticker (no agents)
-- [ ] Phase 3 — one worker agent, standalone, strict JSON output
-- [ ] Phase 4 — supervisor + one worker (LangGraph)
-- [ ] Phase 5 — the other two workers, in parallel
-- [ ] Phase 6 — Bull/Bear debate + Judge
-- [ ] Phase 7 — Telegram delivery + cron
+- [x] Phase 3 — one worker agent, standalone, strict JSON output
+- [x] Phase 4 — supervisor + one worker (LangGraph)
+- [x] Phase 5 — the other two workers, in parallel
+- [x] Phase 6 — Bull/Bear debate + Judge
+- [x] Phase 7 — Telegram delivery + cron
+
+## Running the full desk
+
+```bash
+source venv/bin/activate
+python -m src.graph.desk BEL.NS        # workers -> debate -> judge, prints everything
+python -m src.run BEL.NS --no-send     # full pipeline, preview Telegram msg, no send
+python -m src.run BEL.NS HAL.NS        # run + deliver to Telegram
+```
+
+## Telegram delivery
+
+1. Put your bot token in `.env` as `TELEGRAM_BOT_TOKEN`.
+2. Send your bot any message from your Telegram account.
+3. Get your chat id:
+   `https://api.telegram.org/bot<TOKEN>/getUpdates` -> `result[].message.chat.id`.
+4. Put it in `.env` as `TELEGRAM_CHAT_ID`.
+5. Test: `python -m src.run BEL.NS`.
+
+No order is ever placed. Every message ends with "Human approves all trades."
+
+## Scheduled runs (cron)
+
+`scripts/run_desk_cron.sh` activates the venv, runs the tickers in its `TICKERS`
+array (default `BEL.NS HAL.NS`), and appends to `logs/desk-YYYY-MM-DD.log`.
+
+Installed crontab entry (weekdays 08:30 IST, pre-market):
+
+```
+30 8 * * 1-5 "/path/to/scripts/run_desk_cron.sh" # stock-research-desk
+```
+
+On macOS, the `cron` daemon may need **Full Disk Access** (System Settings ->
+Privacy & Security) to run successfully.
 
 ## Setup
 
