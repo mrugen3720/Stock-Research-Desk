@@ -1,8 +1,13 @@
-"""Email delivery of the Judge's verdict (fallback channel).
+"""Sends a verdict OUT by email — the reliable fallback channel.
 
-Plain stdlib SMTP (smtplib) over STARTTLS, or implicit SSL on port 465. Defaults
-suit Gmail with an App Password. Sends a multipart message (plain text + HTML).
-Like Telegram, every message states that a human approves all trades.
+Uses Python's built-in email tools (`smtplib`) — no extra library needed. It
+logs into your email account (defaults suit Gmail with an "App Password") and
+sends a message that has both a plain-text and an HTML version, so it looks good
+in any email app.
+
+This is the channel that "just works" in India right now (Telegram is blocked),
+and it's also what the scheduled cron job uses. Like every channel, the message
+states that a human approves all trades.
 """
 
 import html

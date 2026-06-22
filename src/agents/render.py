@@ -1,4 +1,13 @@
-"""Render the dossier and debate transcript into prompt-friendly text."""
+"""The formatter — turns data into readable text for the AI prompts.
+
+The debaters and the Judge need to "see" the worker reports (the dossier) and the
+debate so far. But those are Python dicts/lists, not something you'd paste into a
+prompt. These two helpers convert them into clean, labelled text. Keeping this in
+one file means the formatting isn't copy-pasted across the debaters and judge.
+
+  - dossier_to_text(dossier)        -> the 3 worker reports + price, as text.
+  - transcript_to_text(transcript)  -> the debate rounds so far, as text.
+"""
 
 
 def dossier_to_text(dossier: dict) -> str:

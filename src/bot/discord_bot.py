@@ -1,9 +1,13 @@
-"""Inbound Discord bot: chat a stock name, get a verdict back.
+"""The Discord chat bot — the one you actually use today.
 
-A thin adapter over the channel-agnostic `core.run_for_query`. Discord uses a
-gateway (outbound) connection, so — like Telegram polling — it needs no public
-URL and works behind a home network. Unlike Telegram, Discord is not banned in
-India, so this is the testable-today channel.
+Like the Telegram bot, it's a thin skin over the shared brain
+`core.run_for_query`; it just talks to Discord instead. It connects OUT to
+Discord's gateway, so no public web address is needed — and Discord isn't banned
+in India, which is why this is the working channel right now.
+
+Extra feature here: before running, it pops up DROPDOWNS so you can pick which AI
+model handles each step (research / debate / judge) for that one request — see
+the ModelPicker class below.
 
 Two ways to ask:
   - /stock <query>   slash command — works out of the box, no special intents.

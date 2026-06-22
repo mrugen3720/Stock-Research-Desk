@@ -1,8 +1,14 @@
-"""Inbound Telegram bot: user sends a stock name, gets a verdict back.
+"""The Telegram chat bot — you message it a stock name, it replies a verdict.
 
-Uses long polling (the bot dials out to Telegram), so it needs no public URL and
-works behind a home network — once Telegram itself is reachable. The blocking
-desk run is offloaded with asyncio.to_thread so the bot stays responsive.
+"Inbound" = it LISTENS for your messages (the opposite of src/delivery/telegram.py,
+which only pushes out finished verdicts). It's a thin skin over the shared brain
+`core.run_for_query` — it just receives text and formats the reply.
+
+How it listens: "long polling" means the bot keeps asking Telegram "any new
+messages?" — it dials OUT, so it works behind your home Wi-Fi with no public web
+address. (Currently waiting on the India Telegram ban to lift; use the Discord
+bot meanwhile.) The slow desk run is pushed to a background thread
+(asyncio.to_thread) so the bot doesn't freeze while it works.
 
 Run it:
     python -m src.bot.telegram_bot

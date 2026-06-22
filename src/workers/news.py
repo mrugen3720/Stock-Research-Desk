@@ -1,7 +1,12 @@
-"""Phase 5: the news worker. Standalone, strict JSON output.
+"""The NEWS worker — our "journalist" AI.
 
-Pipeline: DuckDuckGo news (last 2 weeks) -> headline/snippet block -> LLM reads
-ONLY those articles -> WorkerReport.
+Same 3-step recipe as technicals.py (read that one first if this looks new):
+    1. FETCH   recent headlines (last ~2 weeks) via DuckDuckGo (using news.py).
+    2. (no math step here — the "facts" are the article snippets themselves.)
+    3. ASK     the LLM to judge sentiment & materiality and return a WorkerReport.
+
+The skill here is telling real, market-moving news (a big order win, results)
+apart from generic "stocks to watch today" noise.
 
 Run it directly:
     python -m src.workers.news          # defaults to BEL.NS

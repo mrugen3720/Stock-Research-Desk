@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
-# Cron wrapper for the research desk. Activates the venv, runs the desk for the
-# configured tickers, and appends output to a dated log. Telegram delivery is on
-# unless you add --no-send.
+# The "alarm clock" script — what the scheduler (cron) runs automatically.
+#
+# Why a separate shell script instead of pointing cron straight at Python? Because
+# cron starts with an almost-empty environment: no virtualenv, wrong folder. So
+# this wrapper does the setup a human would do by hand — move into the project,
+# turn on the venv — then runs the desk and saves the output to a dated log file.
+#
+# It activates the venv, runs the desk for the configured tickers, and appends
+# output to a dated log. Delivery (email/Telegram) is on unless you add --no-send.
 #
 # Install (run the desk every weekday at 08:30 IST = 03:00 UTC):
 #   crontab -e

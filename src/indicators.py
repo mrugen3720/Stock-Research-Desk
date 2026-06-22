@@ -1,8 +1,15 @@
-"""Pure-Python technical indicators computed from a candle DataFrame.
+"""The chart math — turns raw prices into technical indicators (NO AI here).
 
-We compute the numbers here (pandas/numpy, no TA-Lib) so the LLM reasons over
-real, deterministic figures instead of inventing them. Everything returns plain
-floats in a dict, ready to drop into a prompt.
+This file is plain arithmetic with pandas/numpy. It exists because of a core
+rule of the project: the AI must never compute numbers (it can confidently get
+them wrong). So we calculate the real indicators — moving averages, RSI, MACD,
+ATR, returns, volume trends — here, and the technicals worker only *interprets*
+them.
+
+Two functions matter to a reader:
+  - compute(df)         -> a dict of numbers (the actual indicators).
+  - to_prompt_block(d)  -> those numbers as a tidy text block for the AI prompt.
+The underscore-prefixed helpers (_rsi, _macd, _atr) are the individual formulas.
 """
 
 import numpy as np

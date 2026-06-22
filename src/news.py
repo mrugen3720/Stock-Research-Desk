@@ -1,7 +1,14 @@
-"""Recent-news fetch via DuckDuckGo (ddgs), filtered to the last N days.
+"""The headline fetcher — recent news for the AI to read (NO AI here).
 
-ddgs `timelimit` only offers d/w/m/y, so we pull a month and filter client-side
-to the exact window (default 14 days = "last 2 weeks" from the brief).
+Plain web-search plumbing using `ddgs` (DuckDuckGo search). It does three jobs
+for the news worker:
+  - build_query(name, ticker) : turn "Bharat Electronics Limited" into a good
+    search query (drop "Limited", add the ticker root) so results stay on-topic.
+  - fetch_recent(query)       : get news articles and keep only the last ~14 days.
+  - to_prompt_block(articles) : format them as a numbered list for the prompt.
+
+Quirk worth knowing: DuckDuckGo only lets us filter by day/week/month/year, so we
+ask for a month and then filter to exactly 14 days ourselves in Python.
 """
 
 import re

@@ -1,7 +1,12 @@
-"""Verdict delivery with fallback: try Telegram, then email.
+"""The delivery router — get the verdict to the human, with a backup plan.
 
-`deliver_verdict` returns the name of the channel that succeeded, or raises
-DeliveryError with the per-channel failures if every configured channel fails.
+`deliver_verdict()` tries Telegram first; if that isn't set up or fails, it
+falls back to email. It returns the name of the channel that actually worked
+("telegram" or "email"), or raises DeliveryError if every channel failed.
+
+WHY a router: the caller just says "deliver this" and doesn't worry about which
+channel is up. (This matters in practice — Telegram is banned in India right now,
+so email quietly takes over.)
 """
 
 from . import email, telegram

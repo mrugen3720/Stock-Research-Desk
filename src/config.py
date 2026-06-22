@@ -1,7 +1,13 @@
-"""Central config. Loads .env and exposes keys, base URLs, and model names.
+"""The settings desk — the ONE place that reads your .env file.
 
-Keys are NEVER hardcoded — they come from .env (gitignored). Models and base
-URLs are overridable via env so we can swap them without touching code.
+Every secret (API keys) and every knob (which model each agent uses) is read
+here and handed to the rest of the program. Two beginner-important ideas:
+
+  - Secrets are NEVER written in the code. They live in .env (which git ignores),
+    and `load_dotenv()` loads that file into the environment so `os.getenv` can
+    read it. Change a key? Edit .env, not the code.
+  - `model_for(role)` is how any agent asks "which model should I use?" — it
+    returns that agent's override if you set one, else the shared default.
 """
 
 import os

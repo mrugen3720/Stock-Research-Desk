@@ -1,8 +1,11 @@
-"""Resolve free-text stock names/abbreviations to an NSE (.NS) ticker.
+"""The name detective — turns messy human input into a real NSE ticker.
+
+WHY: nobody wants to memorize that Tata Steel is "TATASTEEL.NS". This lets the
+user type whatever feels natural and we figure out the exact symbol.
 
 The user should be able to type "reliance", "tata steel", "Tata Power", "cdsl",
-"BEL", "infosys" — and we figure out the right NSE symbol. Strategy, cheapest
-first:
+"BEL", "infosys" — and we figure out the right NSE symbol. We try the cheapest,
+most certain method first and only fall back to web search if needed:
 
 1. Curated aliases for short forms search handles poorly (rel, ril, l&t, sbi...).
 2. Already a ticker? (RELIANCE.NS / TATASTEEL.BO) -> normalize to .NS.

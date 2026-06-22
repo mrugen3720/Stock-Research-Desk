@@ -1,8 +1,9 @@
-"""Phase 2: plain data-fetch for ONE ticker. No agents.
+"""The very first thing built — a plain data dump for ONE stock. NO AI at all.
 
-Pulls ~6 months of daily candles plus basic fundamentals from yfinance and
-prints them cleanly. This is a sanity check that our data source works before
-any agent touches it.
+This was step 2 of the project, before any agents existed. It just pulls ~6
+months of prices plus a few fundamentals and prints them, to prove the data
+source works. It's still handy as a quick sanity check: if this prints clean
+numbers, the data layer is healthy. A nice, dependency-light file to read first.
 
 Usage:
     python scripts/fetch_one.py          # defaults to BEL.NS

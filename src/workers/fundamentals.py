@@ -1,7 +1,12 @@
-"""Phase 5: the fundamentals worker. Standalone, strict JSON output.
+"""The FUNDAMENTALS worker — our "accountant" AI.
 
-Pipeline: yfinance .info + .financials -> extract metrics in Python -> LLM reads
-ONLY those numbers -> WorkerReport.
+Same 3-step recipe as technicals.py (read that one first if this looks new):
+    1. FETCH   the company's numbers from Yahoo (.info + .financials).
+    2. COMPUTE / tidy them in Python (via fundamentals.py) — no AI math.
+    3. ASK     the LLM to read those facts and return a strict WorkerReport.
+
+What's different is only the *subject*: this one weighs valuation vs. quality
+(a great company can still be a poor buy if it's too expensive).
 
 Run it directly:
     python -m src.workers.fundamentals          # defaults to BEL.NS

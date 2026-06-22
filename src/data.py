@@ -1,4 +1,11 @@
-"""Thin yfinance wrapper. One place for all raw market data access."""
+"""The data tap — the ONLY file that talks to the market-data source.
+
+Everything here is a thin wrapper around `yfinance` (a library that downloads
+free stock data from Yahoo Finance). Keeping all of that behind these few
+functions means the rest of the code just calls e.g. `get_daily_candles("BEL.NS")`
+and never has to care *where* the data comes from. If we ever swap data sources,
+this is the only file that changes.
+"""
 
 import yfinance as yf
 

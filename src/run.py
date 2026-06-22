@@ -1,8 +1,12 @@
-"""Entry point: run the desk on one or more stocks and deliver verdicts.
+"""The command-line front door — run the desk from a terminal (no chat app).
+
+This is the non-bot way to use the project: from a terminal, analyze one or more
+stocks and have the verdict delivered (or just printed). It's also what the
+scheduled cron job calls each morning. Three handy modes: normal (run + deliver),
+`--no-send` (just print, don't email/Telegram), and `-i` (interactive REPL).
 
 Accepts free-text names OR tickers — "reliance", "tata steel", "cdsl", "BEL",
-"RELIANCE.NS" all work; each is resolved to an NSE (.NS) ticker first. This is
-what cron calls, and what you use interactively to test without Telegram.
+"RELIANCE.NS" all work; each is resolved to an NSE (.NS) ticker first.
 
 Usage:
     python -m src.run BEL.NS                  # run + deliver

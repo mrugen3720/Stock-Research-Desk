@@ -1,8 +1,12 @@
-"""Telegram delivery of the Judge's verdict.
+"""Sends a verdict OUT to Telegram (this is delivery, not the chat bot).
 
-Formats the verdict (plus a short dossier summary) into an HTML message and
-sends it via the bot. NO order is ever placed — the message always states that
-a human approves every trade.
+Note the difference from src/bot/telegram_bot.py: that file *listens* for your
+messages; THIS file just *pushes* a finished verdict to your Telegram. It turns
+the verdict into a nicely formatted HTML message and sends it via the bot API.
+
+`format_verdict()` builds the message; `send_message()` / `deliver_verdict()`
+send it. Every message ends with "Human approves all trades" — no order is ever
+placed automatically.
 """
 
 import asyncio

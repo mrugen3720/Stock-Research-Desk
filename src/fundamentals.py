@@ -1,8 +1,13 @@
-"""Extract a clean fundamentals snapshot from yfinance .info + .financials.
+"""The company-numbers math — fundamentals facts for the AI to read (NO AI here).
 
-Like indicators.py for technicals: we pull the real numbers here so the LLM
-reasons over facts, not guesses. Absolute rupee figures are shown in crore
-(1 crore = 1e7), the convention Indian investors read in.
+This is the fundamentals twin of indicators.py. It pulls the company's real
+business figures (valuation like P/E and P/B, profitability like ROE and margins,
+growth, debt) from Yahoo's data and tidies them up — so the fundamentals worker
+reasons over facts, not guesses.
+
+One India-specific touch: big rupee amounts are shown in *crore* (1 crore =
+10,000,000), the unit Indian investors actually read. The small `_num` / `_crore`
+/ `_pct` helpers just format numbers safely (returning None when data is missing).
 """
 
 import math
