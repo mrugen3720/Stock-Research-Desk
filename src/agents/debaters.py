@@ -1,8 +1,15 @@
-"""The Bull and Bear debaters.
+"""The Bull and Bear debaters — the optimist vs. the pessimist.
 
-Each reads the dossier (and the debate so far) and argues its side in prose.
-Round 1 is an opening case. Round 2 must single out the opponent's weakest
-claim and attack it directly, then reinforce its own thesis.
+WHY A DEBATE? A single AI opinion can sound confident and miss the other side.
+Forcing one agent to argue FOR and another to argue AGAINST surfaces the risks
+and counter-arguments that a lone analyst would gloss over. The Judge later
+weighs both.
+
+Both sides share ONE function, `argue()` — we just tell it which side to play:
+  - Round 1 = make your opening case from the dossier.
+  - Round 2 = find the OTHER side's weakest claim, attack it, then reinforce yours.
+
+Unlike the workers, debaters return plain prose (an argument), not strict JSON.
 """
 
 from langchain_core.messages import HumanMessage, SystemMessage

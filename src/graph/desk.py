@@ -1,14 +1,28 @@
-"""Phase 4: the research desk as a LangGraph supervisor graph.
+"""THE CONDUCTOR — the whole research desk wired together with LangGraph.
 
-Flow:
-    START -> supervisor -> (Send fan-out) -> run_worker[...] -> bundle -> END
+This is the heart of the project and the actual subject ("multi-agent
+orchestration"). If the workers/agents are the musicians, this file is the
+conductor that tells them when to play.
 
-The supervisor does NO analysis. It only picks which workers to dispatch and
-emits a `Send` per worker. Each branch runs one worker and writes its report
-into a reduced `reports` dict, so adding the other two workers in Phase 5 is
-just a longer dispatch list — the wiring below does not change.
+The full flow (each box below is a "node" = a Python function further down):
 
-Run it directly:
+    START
+      -> supervisor          (manager: picks which workers to run; no analysis)
+      -> [technicals | fundamentals | news]   (3 workers, ALL AT ONCE via `Send`)
+      -> bundle              (glue the 3 reports into one "dossier" + add price)
+      -> bull -> bear        (debate round 1)
+      -> (loop back to bull for round 2, then...)
+      -> judge               (reads everything, issues the Verdict)
+    END
+
+KEY LANGGRAPH IDEAS USED HERE (see GLOSSARY.md):
+  - State    : a shared "clipboard" (DeskState) passed between nodes.
+  - Node     : one step = one function that reads the state and returns updates.
+  - Edge     : an arrow "after this node, go to that one".
+  - Send     : launches the 3 workers in PARALLEL instead of one-by-one.
+  - Reducer  : merges updates when parallel nodes write the same field at once.
+
+Run it directly to watch every step print:
     python -m src.graph.desk            # defaults to BEL.NS
     python -m src.graph.desk TCS.NS
 """
@@ -39,21 +53,31 @@ ROUNDS = 2
 
 
 def merge_reports(left: dict | None, right: dict | None) -> dict:
-    """Reducer: merge worker reports from parallel branches into one dict."""
+    """Reducer: merge worker reports from parallel branches into one dict.
+
+    The 3 workers finish at roughly the same time and each wants to add its
+    report to `reports`. Without a reducer, the last one would overwrite the
+    others. This says "when two updates arrive, MERGE them" so all 3 survive.
+    """
     merged = dict(left or {})
     merged.update(right or {})
     return merged
 
 
+# DeskState is the shared "clipboard" carried through the whole graph. Every node
+# receives it, reads what it needs, and returns the fields it wants to add/change.
+# `total=False` just means "not every field has to be present at every step".
 class DeskState(TypedDict, total=False):
-    ticker: str                          # set once at entry
-    models: dict                         # per-role model overrides (role -> model id)
-    plan: list[str]                      # supervisor's chosen workers
+    ticker: str                          # the stock, e.g. "BEL.NS" (set at entry)
+    models: dict                         # optional per-role model overrides
+    plan: list[str]                      # which workers the supervisor chose
     worker: str                          # per-branch: which worker this Send runs
-    reports: Annotated[dict, merge_reports]  # name -> report dict (reduced)
-    dossier: dict                        # bundled worker reports + price
-    transcript: Annotated[list, operator.add]  # debate, appended each turn
-    rounds_done: int                     # completed Bull+Bear rounds
+    # `Annotated[..., reducer]` attaches the merge rule explained above. These two
+    # fields get written by parallel/repeated nodes, so they need reducers:
+    reports: Annotated[dict, merge_reports]     # name -> report (parallel workers)
+    transcript: Annotated[list, operator.add]   # debate turns (appended each round)
+    dossier: dict                        # the bundled reports + current price
+    rounds_done: int                     # how many Bull+Bear rounds are finished
     verdict: dict                        # the Judge's final call
 
 
@@ -132,7 +156,13 @@ def bear(state: DeskState) -> DeskState:
 
 
 def route_debate(state: DeskState) -> str:
-    """After each round: another round, or hand off to the Judge."""
+    """The "fork in the road" after each debate round.
+
+    This is a CONDITIONAL EDGE: instead of always going to the same next node,
+    it returns the NAME of the next node based on the state. Here: if we haven't
+    done ROUNDS (2) rounds yet, loop back to "bull"; otherwise go to "judge".
+    That single line is what creates the 2-round debate loop.
+    """
     return "bull" if state["rounds_done"] < ROUNDS else "judge"
 
 
@@ -146,8 +176,14 @@ def judge(state: DeskState) -> DeskState:
 
 
 def build_graph():
-    """Compile the full desk graph: workers -> debate loop -> judge."""
+    """Assemble the diagram from the module docstring into a runnable graph.
+
+    Two phases: first add every node (the boxes), then add every edge (the
+    arrows). LangGraph then knows the whole flow and can execute it.
+    """
     g = StateGraph(DeskState)
+
+    # 1) The boxes — register each node function under a name.
     g.add_node("supervisor", supervisor)
     g.add_node("run_worker", run_worker)
     g.add_node("bundle", bundle)
@@ -155,15 +191,19 @@ def build_graph():
     g.add_node("bear", bear)
     g.add_node("judge", judge)
 
-    g.add_edge(START, "supervisor")
+    # 2) The arrows — connect the boxes in order.
+    g.add_edge(START, "supervisor")                 # begin at the supervisor
+    # `dispatch` returns Send objects -> fans out to run_worker once per worker,
+    # all in parallel. (Conditional edge because the targets are decided at runtime.)
     g.add_conditional_edges("supervisor", dispatch, ["run_worker"])
-    g.add_edge("run_worker", "bundle")
-    # Debate: bundle -> bull -> bear -> (loop to bull | judge) -> END.
+    g.add_edge("run_worker", "bundle")              # every worker -> bundle
+    # The debate: bundle -> bull -> bear -> (loop to bull OR go to judge) -> END.
     g.add_edge("bundle", "bull")
     g.add_edge("bull", "bear")
     g.add_conditional_edges("bear", route_debate, ["bull", "judge"])
-    g.add_edge("judge", END)
-    return g.compile()
+    g.add_edge("judge", END)                         # the verdict is the finish line
+
+    return g.compile()                              # turn the diagram into a runnable
 
 
 def run_desk(ticker: str, model_overrides: dict | None = None) -> dict:

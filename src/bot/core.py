@@ -1,8 +1,17 @@
-"""Channel-agnostic bot core: free-text query -> resolved ticker -> verdict.
+"""The shared brain every chat bot calls — independent of any platform.
 
-Any chat adapter (Telegram now; Discord/WhatsApp later) calls `run_for_query`
-and then formats the result for its platform. This keeps the resolve+desk logic
-in one place, independent of the messaging channel.
+"Channel-agnostic" means this file knows NOTHING about Discord or Telegram. It
+does the real work — take your text, find the stock, run the whole desk, hand
+back a tidy result — and each bot is just a thin "skin" that calls this and
+formats the answer for its own app.
+
+WHY: write the hard logic once. Adding a new channel (WhatsApp, Slack...) then
+means writing a small adapter, not re-doing the pipeline.
+
+The result is always a dict with `ok`:
+  ok=True  -> has ticker, name, dossier, verdict
+  ok=False -> has a friendly `error` string
+It never raises, so the calling bot can stay simple.
 """
 
 from .. import resolve

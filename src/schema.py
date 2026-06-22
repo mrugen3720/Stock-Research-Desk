@@ -1,8 +1,15 @@
-"""The strict JSON contract every worker returns.
+"""The "forms" everyone fills out — the data contracts.
 
-This is the single source of truth for the worker output shape. The supervisor,
-debaters, and judge all rely on every worker speaking exactly this language:
-findings, stance, confidence, sources.
+WHY THIS FILE MATTERS: every worker must answer in the EXACT same shape, and the
+Judge must answer in its own fixed shape. Defining those shapes here, once, means
+the whole rest of the program can trust the data looks the same every time.
+
+These are Pydantic "models". Think of each as a strict form with labelled boxes:
+if the AI tries to hand back a form with a box missing or the wrong type,
+Pydantic refuses it — so "strict" is actually enforced, not just hoped for.
+
+  - WorkerReport : the form the 3 workers fill out.
+  - Verdict      : the form the Judge fills out.
 """
 
 from typing import List, Literal
@@ -11,7 +18,12 @@ from pydantic import BaseModel, Field
 
 
 class WorkerReport(BaseModel):
-    """Identical shape across the technicals, fundamentals, and news workers."""
+    """The one form every worker fills out (technicals, fundamentals, news).
+
+    Four boxes: findings, stance, confidence, sources. `Field(...)` marks a box
+    as REQUIRED; the `description` text is also sent to the AI to tell it exactly
+    what to put there.
+    """
 
     findings: List[str] = Field(
         ...,

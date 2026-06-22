@@ -18,7 +18,8 @@
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Make LLM model configurable per agent \\(workers, debaters, judge\\) *)",
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Discord: pick models per request via dropdowns before running *)",
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Discord picker: label each dropdown by purpose + add model hints *)",
-      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Default all agents to openai/gpt-oss-120b *)"
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Default all agents to openai/gpt-oss-120b *)",
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'docs: add beginner guide + glossary + file map; humanize code comments *)"
     ]
   }
 }

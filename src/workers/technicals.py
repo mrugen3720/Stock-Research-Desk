@@ -1,9 +1,16 @@
-"""Phase 3: the technicals worker. Standalone, strict JSON output.
+"""The TECHNICALS worker — our "chart analyst" AI.
 
-Pipeline: fetch daily candles -> compute indicators in Python -> ask the LLM
-(Groq, NIM fallback) to read ONLY those numbers and return a WorkerReport.
+NEW HERE? Read this file first. All three workers follow the SAME 3-step recipe;
+once you get this one, you understand fundamentals.py and news.py too.
 
-Run it directly:
+The recipe (see analyze() below):
+    1. FETCH   real price data from Yahoo Finance.
+    2. COMPUTE the indicators (RSI, moving averages...) in plain Python.
+       -> We do the MATH ourselves so the AI can't invent wrong numbers.
+    3. ASK     the LLM to read those real numbers and return a WorkerReport
+       (the strict findings/stance/confidence/sources shape from schema.py).
+
+Run it on its own to see one worker in action:
     python -m src.workers.technicals          # defaults to BEL.NS
     python -m src.workers.technicals TCS.NS
 """
@@ -18,6 +25,9 @@ from ..schema import WorkerReport
 
 WORKER_NAME = "technicals"
 
+# The SYSTEM_PROMPT is the AI's job description — it sets the role and the rules
+# BEFORE it sees any data. Note how strict it is: "use ONLY these numbers, don't
+# invent anything." That discipline is what keeps the worker trustworthy.
 SYSTEM_PROMPT = (
     "You are the TECHNICALS worker on an equity research desk covering Indian "
     "(NSE) stocks. You are given a block of precomputed technical indicators for "
@@ -40,20 +50,32 @@ SYSTEM_PROMPT = (
 
 
 def analyze(ticker: str, model: str | None = None) -> WorkerReport:
-    """Run the full technicals pipeline for one ticker."""
+    """Run the full technicals pipeline for one ticker.
+
+    `model` lets the caller pick which AI model to use for this run; if None we
+    fall back to whatever config says this worker should use.
+    """
+    # STEP 1 — FETCH: one year of daily price candles from Yahoo Finance.
     candles = data.get_daily_candles(ticker, period="1y")
+
+    # STEP 2 — COMPUTE: turn raw prices into indicators (in Python, no AI), then
+    # format them as a neat text block to paste into the prompt.
     ind = indicators.compute(candles)
     block = indicators.to_prompt_block(ind)
 
+    # STEP 3 — ASK: build the AI (forced to return a strict WorkerReport) and
+    # send it two messages: the job description, then the actual numbers.
     llm = build_structured_llm(WorkerReport, model=model or config.model_for(WORKER_NAME))
     report = llm.invoke(
         [
-            SystemMessage(content=SYSTEM_PROMPT),
-            HumanMessage(
+            SystemMessage(content=SYSTEM_PROMPT),                 # the rules
+            HumanMessage(                                          # the data
                 content=f"Ticker: {ticker} (NSE)\n\nIndicator block:\n{block}"
             ),
         ]
     )
+    # `report` is already a validated WorkerReport object (Pydantic guaranteed
+    # the shape). If the AI had answered in the wrong shape, this would've erred.
     return report
 
 

@@ -1,8 +1,17 @@
-"""The Judge. Reads the dossier + the full Bull/Bear debate and rules.
+"""The Judge — the agent that makes the final, accountable call.
 
-Outputs a strict Verdict: direction, conviction, the one-line thesis, the single
-invalidator, and a concrete price level where the idea is dead. No order is ever
-placed — this is a recommendation for a human.
+It reads EVERYTHING (the workers' dossier + the full Bull/Bear debate) and is
+told to weigh evidence over rhetoric: reward arguments backed by the dossier's
+numbers, discount unsupported or rebutted ones.
+
+It returns a strict `Verdict` (see schema.py):
+  - direction   : long / short / avoid
+  - conviction  : 0-1, how strong the call is
+  - thesis      : one sentence — the call and its core reason
+  - invalidator : the single thing that would prove it wrong
+  - dead_price  : the price level at which the idea is officially dead
+
+NOTE: this is a recommendation for a HUMAN. No order is ever placed automatically.
 """
 
 from langchain_core.messages import HumanMessage, SystemMessage

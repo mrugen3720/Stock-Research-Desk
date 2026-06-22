@@ -1,8 +1,19 @@
-"""LLM factory: Groq primary, NVIDIA NIM fallback, both OpenAI-compatible.
+"""The AI factory — one place that builds every connection to an LLM.
 
-`build_structured_llm(schema)` returns a runnable that emits validated instances
-of `schema`. If Groq fails (rate limit, outage), LangChain transparently retries
-the same call against NVIDIA NIM.
+Every agent gets its AI from here, so the "how do we talk to the model" details
+live in exactly one file. Two flavours:
+
+  - build_structured_llm(Schema) : the AI is FORCED to answer in a Pydantic shape
+    (used by the workers and the judge, which need strict JSON).
+  - build_chat_llm()             : the AI answers in plain prose
+    (used by the Bull/Bear debaters, who write arguments).
+
+Both wire up a SAFETY NET: try Groq first; if Groq fails (rate limit, outage),
+LangChain automatically retries the SAME request on NVIDIA NIM. The caller never
+has to think about it.
+
+("OpenAI-compatible" just means Groq and NIM both speak the same API dialect, so
+the same ChatOpenAI client works for either by swapping the base URL + key.)
 """
 
 from langchain_openai import ChatOpenAI

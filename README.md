@@ -1,5 +1,11 @@
 # Stock Research Desk
 
+> 📚 **New to this project? Read [`docs/GUIDE.md`](docs/GUIDE.md) first** — a
+> plain-English, from-scratch tour. Then [`docs/FILE-MAP.md`](docs/FILE-MAP.md)
+> (what each file does) and [`docs/GLOSSARY.md`](docs/GLOSSARY.md) (every term
+> explained). The code itself is commented for beginners.
+
+
 A learning project: a multi-agent stock research desk for the Indian market, built to
 learn **LangGraph's supervisor pattern**. The subject is the Indian stock market (NSE).
 **Making money is not the goal** — this never places orders. A human approves every trade.
