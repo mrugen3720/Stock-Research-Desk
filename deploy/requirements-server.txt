@@ -1,0 +1,12 @@
+# Top-level deps only, pinned to the versions the code was written against.
+# We install THESE (not the macOS-frozen requirements.txt) on the server, because
+# that frozen file includes audioop-lts, a Python 3.13+/abi3 wheel with no build
+# for Ubuntu's Python 3.12. pip resolves the transitive deps (pandas, numpy,
+# pydantic, etc.) for whatever Python the server has.
+langgraph==1.2.6
+langchain-openai==1.3.2
+discord.py==2.7.1
+python-telegram-bot==22.8
+yfinance==1.4.1
+ddgs==9.14.4
+python-dotenv==1.2.2

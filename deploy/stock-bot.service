@@ -1,0 +1,15 @@
+[Unit]
+Description=Stock Research Desk Discord bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/stock-research-desk
+ExecStart=/home/ubuntu/stock-research-desk/venv/bin/python -m src.bot.discord_bot
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
