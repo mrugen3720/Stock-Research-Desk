@@ -6,6 +6,11 @@ Free forever, never sleeps. One-time VM setup, then it looks after itself.
 The bot uses Discord **long polling** (it dials OUT), so the server needs **no
 public URL and no inbound ports** — just SSH for setup.
 
+> **This deployment (Oracle Cloud, Mumbai):**
+> - Reserved public IP: **`129.154.246.121`** · OS user: `ubuntu`
+> - Connect: `ssh -i <your-key>.key ubuntu@129.154.246.121`
+> - Service: `stock-bot` (systemd) — `sudo systemctl status stock-bot`
+
 ---
 
 ## 1. Create the free VM (one-time, in the Oracle web console)
