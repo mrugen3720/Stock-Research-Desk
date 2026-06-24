@@ -1,5 +1,9 @@
 # Stock Research Desk
 
+> 🧭 **Full context in one place:** [`CLAUDE.md`](CLAUDE.md) (entry point, auto-loaded
+> by Claude Code) and [`docs/MASTER.md`](docs/MASTER.md) (the exhaustive reference —
+> architecture, deployment, secrets layout, gotchas, Windows quickstart).
+
 > 📚 **New to this project? Read [`docs/GUIDE.md`](docs/GUIDE.md) first** — a
 > plain-English, from-scratch tour. Then [`docs/FILE-MAP.md`](docs/FILE-MAP.md)
 > (what each file does) and [`docs/GLOSSARY.md`](docs/GLOSSARY.md) (every term

@@ -3,6 +3,9 @@
 Friendly, from-scratch docs for this project. Written for someone new to the
 codebase (or to coding) — lots of plain English and analogies.
 
+**Want everything in one place?** See [MASTER.md](MASTER.md) (the exhaustive
+reference) and [../CLAUDE.md](../CLAUDE.md) (the auto-loaded entry point).
+
 **Read in this order:**
 
 1. **[GUIDE.md](GUIDE.md)** — the big picture. What we're building, the cast of
