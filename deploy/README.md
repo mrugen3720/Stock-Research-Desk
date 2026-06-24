@@ -14,11 +14,16 @@ public URL and no inbound ports** — just SSH for setup.
    required for identity verification only; the Always Free resources are never
    charged.)
 2. **Compute → Create Instance:**
-   - Shape: **Ampere (VM.Standard.A1.Flex)** — set **1 OCPU, 6 GB RAM**.
-   - Image: **Canonical Ubuntu 24.04** (aarch64).
+   - Image: **Change image → Canonical Ubuntu → 24.04**. This is **required** —
+     the default is Oracle Linux, but `setup.sh` uses `apt` and the `ubuntu`
+     user, which only exist on Ubuntu.
+   - Shape: **Change shape → Ampere (VM.Standard.A1.Flex)**, set **1 OCPU,
+     6 GB RAM** (all Always-Free).
+   - **If ARM is "Out of host capacity"** (common in Mumbai): keep the default
+     **AMD VM.Standard.E2.1.Micro** (1 GB, Always-Free) instead — it works, but
+     1 GB is tight for this app, so add a swap file once you're SSH'd in (see
+     *1 GB shape* under Notes below).
    - Save the **SSH private key** it gives you; note the instance's **public IP**.
-   - If you see *"Out of host capacity"*, pick a different Availability Domain or
-     try again later (ARM free capacity comes and goes).
 3. Test SSH from your Mac:
    ```bash
    ssh -i /path/to/key ubuntu@<public-ip>
@@ -80,6 +85,13 @@ sudo systemctl restart stock-bot
 ### Notes / gotchas
 - **Memory:** this app loads pandas + numpy + langgraph (~0.5–1 GB), which is why
   we use the 6 GB ARM VM, not a 256 MB free tier (those crash on startup).
+- **1 GB shape (AMD E2.1.Micro fallback):** add a 2 GB swap file once, on the VM,
+  before running `setup.sh`, so a run can't OOM:
+  ```bash
+  sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && \
+    sudo mkswap /swapfile && sudo swapon /swapfile && \
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+  ```
 - **ARM wheels:** if a package fails to build for lack of an ARM wheel (rare),
   run `sudo apt-get install -y rustc cargo` on the VM and re-run `setup.sh`.
 - **Idle reclamation:** Oracle may reclaim *idle* free instances. A bot polling
