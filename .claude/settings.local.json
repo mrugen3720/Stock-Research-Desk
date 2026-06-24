@@ -20,7 +20,18 @@
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Discord picker: label each dropdown by purpose + add model hints *)",
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'Default all agents to openai/gpt-oss-120b *)",
       "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'docs: add beginner guide + glossary + file map; humanize code comments *)",
-      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'docs: second pass — beginner comments on the remaining helper files *)"
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'docs: second pass — beginner comments on the remaining helper files *)",
+      "Bash(git switch *)",
+      "Bash(git push *)",
+      "Bash(bash -n deploy/setup.sh)",
+      "Bash(chmod +x deploy/setup.sh)",
+      "Bash(git -c user.name=Mrugen -c user.email=mrugen37@gmail.com commit -q -m 'deploy: add Oracle Cloud VM runbook \\(systemd service + setup script\\) *)",
+      "Bash(git -c user.name=\"Mrugen\" -c user.email=\"mrugen37@gmail.com\" commit -q -m \"deploy: note Ubuntu image is required + 1GB AMD-micro swap fallback\")",
+      "Bash(git remote *)",
+      "Bash(git ls-remote *)",
+      "Bash(echo \"remote main: $\\(git ls-remote origin -h refs/heads/main)",
+      "Bash(git -c user.name=\"Mrugen\" -c user.email=\"mrugen37@gmail.com\" commit -q -m \"deploy: record reserved public IP \\(129.154.246.121\\) for the live server\")",
+      "Bash(git -c user.name=\"Mrugen\" -c user.email=\"mrugen37@gmail.com\" commit -q -m \"chore: update local Claude Code permission allowlist\")"
     ]
   }
 }
