@@ -70,3 +70,18 @@ def model_for(role: str) -> str:
         if override:
             return override
     return GROQ_MODEL
+
+
+# --- Screener / position-sizing (the /stock_earn_money command) ---
+# Used to turn a stop distance into a share quantity so each trade's loss is
+# capped at RISK_PER_TRADE_PCT of ACCOUNT_CAPITAL. Educational only — no orders.
+def _num_env(name: str, default: float) -> float:
+    try:
+        return float(os.getenv(name, "").strip() or default)
+    except ValueError:
+        return default
+
+
+ACCOUNT_CAPITAL = _num_env("ACCOUNT_CAPITAL", 100000.0)      # your trading capital, INR
+RISK_PER_TRADE_PCT = _num_env("RISK_PER_TRADE_PCT", 1.0)     # % of capital risked per trade
+MAX_PORTFOLIO_HEAT_PCT = _num_env("MAX_PORTFOLIO_HEAT_PCT", 6.0)  # total open risk cap

@@ -360,6 +360,51 @@ is on GitHub `main`, systemd keeps it alive, email fallback works.
 - **No GitHub auto-deploy** — updates are manual (rsync/scp + restart).
 - Work goes **straight to `main`** (no PR flow).
 
+## 15b. Screener subsystem (`src/screener/`) — `/stock_earn_money`
+
+A quantitative trade-idea screener, **separate from the LangGraph debate desk**.
+It scans the Nifty 500 and ranks stocks by **deterministic factor math** (no LLM
+in the ranking path — that's what makes it backtestable and reproducible).
+
+**Files:**
+| File | Purpose |
+|---|---|
+| `src/screener/universe.py` | Nifty 500 constituents (niftyindices CSV, cached weekly, bundled fallback). |
+| `src/screener/data_bulk.py` | Chunked `yf.download` + daily pickle cache for the whole universe. |
+| `src/screener/factors.py` | Momentum (vol-adj 6m/12m), Trend/Technical, Quality (ROE/debt/margins), Value (P/E,P/B) → cross-sectional 0-100 percentile scores; horizon-weighted composite. |
+| `src/screener/levels.py` | Entry zone, ATR/structure stop, 2R target, **₹ position size** (caps loss at risk% of capital). |
+| `src/screener/score.py` | Final 0-100 "take this trade" score (composite + setup quality). |
+| `src/screener/engine.py` | The funnel: price factors on all 500 → fundamentals on top ~120 → rank → top-N picks; caches daily. |
+| `src/screener/tracker.py` | Logs every pick to `data/recommendations.csv`; resolves outcomes; live win-rate/expectancy. |
+| `src/screener/backtest.py` | Point-in-time historical backtest of the momentum/technical rules. |
+
+**Factor weights:** swing = momentum .35 / technical .35 / quality .15 / value .15;
+positional = momentum .15 / technical .15 / quality .35 / value .35.
+
+**Sizing:** `qty = floor(ACCOUNT_CAPITAL × RISK_PER_TRADE_PCT/100 / (entry − stop))`,
+so one losing trade ≈ risk% of capital. Stops = `entry − k×ATR` (swing k=2,
+positional k=3) or below the recent swing low; target = 2:1 (swing) / 2.5:1.
+
+**Commands:**
+```bash
+python -m src.screener.engine swing        # print top 10 swing ideas
+python -m src.screener.engine positional
+python -m src.screener.backtest 150        # validate historically
+python -m src.screener.tracker             # live paper-trade scorecard
+# Discord: /stock_earn_money horizon:swing
+```
+
+**Honest limits (read before risking money):**
+- A screener improves discipline/edge; it is **not** a profit guarantee.
+- The backtest validates **momentum/technical only** — yfinance `.info` is
+  current-only, so **quality/value factors are NOT point-in-time backtestable**.
+- A first run on the example 80–150 name slice showed a *marginal* positive
+  expectancy (~0.03R) with a **large (~45%) drawdown** — raw momentum is
+  drawdown-prone. Treat results as a starting point to refine (regime filters,
+  better entries), and **paper-trade via the tracker for weeks** before real capital.
+- Config: `ACCOUNT_CAPITAL`, `RISK_PER_TRADE_PCT`, `MAX_PORTFOLIO_HEAT_PCT` in `.env`.
+- All caches + the recommendations log live under `data/` (gitignored).
+
 ## 16. Command cheat-sheet
 
 | Goal | Command |

@@ -24,6 +24,7 @@ import discord
 from discord import app_commands
 
 from .. import config
+from ..screener import engine, tracker
 from . import core
 
 _COLOR = {"long": 0x2ECC71, "short": 0xE74C3C, "avoid": 0x95A5A6}
@@ -189,6 +190,45 @@ class ModelPicker(discord.ui.View):
         self.stop()
 
 
+def build_earn_embed(picks: list[dict], horizon: str) -> discord.Embed:
+    """Render the screener's top picks as a compact table embed."""
+    header = f"{'#':>2} {'Stock':<12}{'Scr':>4} {'Entry':>9}{'Stop':>9}{'Target':>9}{'Qty':>5}"
+    lines = [header]
+    for i, p in enumerate(picks, 1):
+        tk = p["ticker"].replace(".NS", "")
+        lines.append(
+            f"{i:>2} {tk:<12}{p['score']:>4} {p['entry']:>9}{p['stop']:>9}"
+            f"{p['target']:>9}{p['qty']:>5}"
+        )
+    embed = discord.Embed(
+        title=f"💰 Top {len(picks)} {horizon} ideas — Nifty 500",
+        description="```\n" + "\n".join(lines) + "\n```",
+        color=0x2ECC71,
+    )
+    embed.add_field(
+        name="Sizing",
+        value=(f"Capital ₹{int(config.ACCOUNT_CAPITAL):,} · "
+               f"risk {config.RISK_PER_TRADE_PCT}%/trade · R:R ≥ 2 · "
+               f"qty caps each loss near ₹{int(config.ACCOUNT_CAPITAL * config.RISK_PER_TRADE_PCT/100):,}"),
+        inline=False,
+    )
+    if picks:
+        t = picks[0]
+        embed.add_field(
+            name=f"#1 {t['ticker'].replace('.NS','')} — why",
+            value=(f"Buy {t['entry_zone'][0]}–{t['entry_zone'][1]} · stop {t['stop']} · "
+                   f"target {t['target']} · qty {t['qty']} (~₹{int(t['rupee_risk'])} risk)\n"
+                   f"factors: momentum {int(t['momentum'])} · technical {int(t['technical'])} · "
+                   f"quality {int(t['quality'])} · value {int(t['value'])} (/100)"),
+            inline=False,
+        )
+    embed.set_footer(
+        text="Educational, not investment advice. No order placed. "
+             "Backtest + paper-trade before risking real money."
+    )
+    return embed
+
+
 def build_client() -> discord.Client:
     intents = discord.Intents.default()
     if config.DISCORD_MESSAGE_CONTENT:
@@ -218,6 +258,32 @@ def build_client() -> discord.Client:
     async def stock(interaction: discord.Interaction, query: str):
         view = ModelPicker(query, interaction.user.id)
         await interaction.response.send_message(content=_picker_intro(query), view=view)
+
+    @tree.command(
+        name="stock_earn_money",
+        description="Scan Nifty 500 for top trade ideas with entry/stop/target + ₹ sizing.",
+    )
+    @app_commands.describe(horizon="swing (days–weeks) or positional (weeks–months)")
+    @app_commands.choices(horizon=[
+        app_commands.Choice(name="Swing (days–weeks)", value="swing"),
+        app_commands.Choice(name="Positional (weeks–months)", value="positional"),
+    ])
+    async def stock_earn_money(interaction: discord.Interaction,
+                               horizon: app_commands.Choice[str]):
+        hz = horizon.value
+        await interaction.response.defer(thinking=True)
+        # First scan of the day computes (~2-3 min for 500 stocks); then it's cached.
+        picks = await asyncio.to_thread(engine.run_screen, hz, 10)
+        if not picks:
+            await interaction.followup.send(
+                "⚠️ No candidates right now (data hiccup). Try again shortly."
+            )
+            return
+        try:
+            await asyncio.to_thread(tracker.log_recommendations, picks, hz)
+        except Exception:
+            pass
+        await interaction.followup.send(embed=build_earn_embed(picks, hz))
 
     @client.event
     async def on_message(message: discord.Message):

@@ -58,6 +58,19 @@ laptop. Key facts:
 Full runbook: [deploy/README.md](deploy/README.md) and
 [docs/MASTER.md](docs/MASTER.md) § Deployment.
 
+## Screener (`/stock_earn_money`)
+
+A **separate** subsystem (`src/screener/`) from the debate desk: scans the Nifty
+500, scores every stock with **deterministic Python factor math** (Momentum +
+Trend/Technical + Quality + Value — NO LLM in the ranking path, so it's
+backtestable), and returns the top 10 with **entry/stop/target levels** and
+**₹ position sizing** (loss capped at `RISK_PER_TRADE_PCT` of `ACCOUNT_CAPITAL`).
+- Horizon flag: `swing` (momentum/technical-weighted) or `positional` (quality/value).
+- Validate before trusting: `python -m src.screener.backtest` (historical) and
+  `python -m src.screener.tracker` (live paper-trade scorecard).
+- **Educational only — not investment advice; no orders placed; paper-trade first.**
+- Run the scan: `python -m src.screener.engine swing`. Detail: `docs/MASTER.md` § Screener.
+
 ## Models
 
 All agents run on **Groq** (default `openai/gpt-oss-120b`), with **NVIDIA NIM**
